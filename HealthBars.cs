@@ -147,15 +147,17 @@ namespace HealthBars
                 if (monster.MaxHealth < monster.Health)
                     monster.MaxHealth = monster.Health;
                 float healthPercentage = (float) monster.Health / monster.MaxHealth;
-                // adjust healthbar so it represents monster health, cropped to texture pixels
-                // TODO: Maybe add config option so it can be displayed in real pixels?
-                int adjustedHealthbarWidth = Math.Max(1, (int) (_healthbarWidth * healthPercentage));
+                
+                // adjust healthbar so it represents monster health
+                float adjustedHealthbarWidth = _config.HealthbarIsPixelAligned ? 
+                    Math.Max(1, (int) (_healthbarWidth * healthPercentage)) :
+                    _healthbarWidth * healthPercentage;
 
                 // actual healthbar rectangle, reposition / resize it so the healthbar stays inside the bar
                 Rectangle healthbarRectangle = new Rectangle(
                     healthbarBorderRectangle.X + 2 * Game1.pixelZoom,
                     healthbarBorderRectangle.Y + 2 * Game1.pixelZoom,
-                    adjustedHealthbarWidth * Game1.pixelZoom,
+                    (int) (adjustedHealthbarWidth * Game1.pixelZoom),
                     _healthbarHeight * Game1.pixelZoom);
 
                 args.SpriteBatch.Draw(_healthbarTexture, healthbarRectangle, GetHealthColor(healthPercentage));
