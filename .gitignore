@@ -1,0 +1,15 @@
+# IDE specific files
+.vs
+.idea
+**.sln
+
+# compiled files
+bin
+obj
+
+# dependencies
+packages
+Properties
+
+# c# project files
+**.csproj.user

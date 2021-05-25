@@ -1,0 +1,10 @@
+﻿{
+  "Name": "HealthBars",
+  "Author": "LoneWolf",
+  "Version": "1.0.0",
+  "Description": "Show health bars above enemies.",
+  "UniqueID": "lonewolf.healthbars",
+  "EntryDll": "HealthBars.dll",
+  "MinimumApiVersion": "3.0.0",
+  "UpdateKeys": []
+}
