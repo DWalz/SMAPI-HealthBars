@@ -7,5 +7,8 @@
 
         /// <summary>If the actual health bar bar (inner part) is pixel aligned with the texture</summary>
         public bool HealthbarIsPixelAligned = true;
+
+        /// <summary>If the health bar should include the current monster health as text</summary>
+        public bool ShowHealthNumbers = true;
     }
 }

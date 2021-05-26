@@ -113,7 +113,6 @@ namespace HealthBars
         private void OnRenderedWorld(object sender, RenderedWorldEventArgs args)
         {
             // Debug helpers - let us enter the mines as quickly as possible;
-
             Game1.player.Speed = 20;
             Game1.player.health = Game1.player.maxHealth;
 
@@ -164,23 +163,35 @@ namespace HealthBars
                     (int) (adjustedHealthbarWidth * Game1.pixelZoom),
                     _healthbarHeight * Game1.pixelZoom);
 
+                // draw health bar border and health bar to the screen
+                args.SpriteBatch.Draw(_healthbarTexture, healthbarRectangle, GetHealthColor(healthPercentage));
+                args.SpriteBatch.Draw(_healthbarBorderTexture, healthbarBorderRectangle, Color.White);
+
+                
+                // only draw the health text if specified so in the config
+                if (!_config.ShowHealthNumbers) continue;
+                
+                // the health text (current health / max health)
                 string healthText = $"{monster.Health}/{monster.MaxHealth}";
+                
+                // calculate best text size to fit the text into the health bar
                 Vector2 textSize = _healthTextFont.MeasureString(healthText);
                 float textScalingFitWidth = _healthbarWidth * Game1.pixelZoom * 1.2f / textSize.X;
                 float textScalingFitHeight = _healthbarHeight * Game1.pixelZoom * 1.2f / textSize.Y;
                 float textSizeScaling = Math.Min(textScalingFitWidth, textScalingFitHeight);
+                
+                // calculate centered position of the text inside the health bar
                 int textOffsetLeftPixels =
                     (int) ((_healthbarWidth * Game1.pixelZoom - textSize.X * textSizeScaling) / 2);
                 int textOffsetTopPixels =
                     (int) ((_healthbarHeight * Game1.pixelZoom - textSize.Y * textSizeScaling) / 2);
                 Vector2 textPosition = new Vector2(healthbarRectangle.X + textOffsetLeftPixels,
                     healthbarRectangle.Y + textOffsetTopPixels);
-
-                // draw health bar border and health bar to the screen
-                args.SpriteBatch.Draw(_healthbarTexture, healthbarRectangle, GetHealthColor(healthPercentage));
-                args.SpriteBatch.Draw(_healthbarBorderTexture, healthbarBorderRectangle, Color.White);
+                    
+                // draw health text to screen
                 args.SpriteBatch.DrawString(_healthTextFont, healthText, textPosition, new Color(86, 22, 12), 0f,
                     Vector2.Zero, textSizeScaling, SpriteEffects.None, 0);
+
             }
         }
 
