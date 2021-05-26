@@ -75,7 +75,7 @@ namespace HealthBars
 
             // Loading textures and assets
             Monitor.Log("Loading Textures", LogLevel.Debug);
-            _healthbarBorderTexture = helper.Content.Load<Texture2D>("assets/healthbar_border_w.png");
+            _healthbarBorderTexture = helper.Content.Load<Texture2D>("assets/healthbar_border_w2.png");
             _healthbarBorderWidth = _healthbarBorderTexture.Width;
             _healthbarBorderHeight = _healthbarBorderTexture.Height;
             _healthbarWidth = _healthbarBorderWidth - 4;
@@ -110,10 +110,10 @@ namespace HealthBars
         private void OnRenderedWorld(object sender, RenderedWorldEventArgs args)
         {
             // Debug helpers - let us enter the mines as quickly as possible;
-            /*
+            
             Game1.player.Speed = 20;
             Game1.player.health = Game1.player.maxHealth;
-            */
+            
 
 
             // Get all the characters and if it is a monster, get the bounding box of the sprite to align
@@ -137,8 +137,8 @@ namespace HealthBars
 
                 // health bar border rectangle
                 Rectangle healthbarBorderRectangle = new Rectangle(
-                    boundingBoxSprite.Center.X - boundingBoxSprite.Width / 2,
-                    boundingBoxSprite.Y + (GetHealthbarOffset(monster) - _healthbarBorderHeight)* Game1.pixelZoom,
+                    boundingBoxSprite.Center.X - _healthbarBorderWidth * Game1.pixelZoom / 2,
+                    boundingBoxSprite.Y + (GetHealthbarOffset(monster) - _healthbarBorderHeight) * Game1.pixelZoom,
                     _healthbarBorderWidth * Game1.pixelZoom, 
                     _healthbarBorderHeight * Game1.pixelZoom);
 
@@ -147,17 +147,20 @@ namespace HealthBars
                 if (monster.MaxHealth < monster.Health)
                     monster.MaxHealth = monster.Health;
                 float healthPercentage = (float) monster.Health / monster.MaxHealth;
-                // adjust healthbar so it represents monster health, cropped to texture pixels
-                // TODO: Maybe add config option so it can be displayed in real pixels?
-                int adjustedHealthbarWidth = Math.Max(1, (int) (_healthbarWidth * healthPercentage));
+                
+                // adjust healthbar so it represents monster health
+                float adjustedHealthbarWidth = _config.HealthbarIsPixelAligned ? 
+                    Math.Max(1, (int) (_healthbarWidth * healthPercentage)) :
+                    _healthbarWidth * healthPercentage;
 
                 // actual healthbar rectangle, reposition / resize it so the healthbar stays inside the bar
                 Rectangle healthbarRectangle = new Rectangle(
                     healthbarBorderRectangle.X + 2 * Game1.pixelZoom,
                     healthbarBorderRectangle.Y + 2 * Game1.pixelZoom,
-                    adjustedHealthbarWidth * Game1.pixelZoom,
+                    (int) (adjustedHealthbarWidth * Game1.pixelZoom),
                     _healthbarHeight * Game1.pixelZoom);
 
+                // draw health bar border and health bar to the screen
                 args.SpriteBatch.Draw(_healthbarTexture, healthbarRectangle, GetHealthColor(healthPercentage));
                 args.SpriteBatch.Draw(_healthbarBorderTexture, healthbarBorderRectangle, Color.White);
             }
