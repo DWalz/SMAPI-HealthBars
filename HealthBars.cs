@@ -21,7 +21,7 @@ namespace HealthBars
 
         /// <summary>The height of the healthbar border in **texture pixels**</summary>
         private int _healthbarBorderHeight;
-        
+
         /// <summary>The width of the health bar in **texture pixels**</summary>
         private int _healthbarWidth;
 
@@ -41,6 +41,9 @@ namespace HealthBars
 
         /// <summary>Texture of the healthbar background</summary>
         private Texture2D _healthbarTexture;
+
+        /// <summary>Font of the healthbar text</summary>
+        private SpriteFont _healthTextFont;
 
 
         /// <summary>Field info for rock crabs' private shellGone property;
@@ -110,11 +113,11 @@ namespace HealthBars
         private void OnRenderedWorld(object sender, RenderedWorldEventArgs args)
         {
             // Debug helpers - let us enter the mines as quickly as possible;
-            
             Game1.player.Speed = 20;
             Game1.player.health = Game1.player.maxHealth;
-            
 
+            if (_healthTextFont == null)
+                _healthTextFont = Game1.smallFont;
 
             // Get all the characters and if it is a monster, get the bounding box of the sprite to align
             // the health bar
@@ -123,10 +126,10 @@ namespace HealthBars
             {
                 // Characters that aren't monsters have no health bar
                 if (!(character is Monster monster)) continue;
-                
+
                 // If the player can't see the monster, the health bar shouldn't be drawn
                 if (!PlayerCanSeeHealth(monster)) continue;
-                
+
                 // current bounding box of the sprite of the monster
                 Rectangle boundingBoxSprite = new Rectangle(
                     (int) monster.getLocalPosition(Game1.viewport).X,
@@ -139,7 +142,7 @@ namespace HealthBars
                 Rectangle healthbarBorderRectangle = new Rectangle(
                     boundingBoxSprite.Center.X - _healthbarBorderWidth * Game1.pixelZoom / 2,
                     boundingBoxSprite.Y + (GetHealthbarOffset(monster) - _healthbarBorderHeight) * Game1.pixelZoom,
-                    _healthbarBorderWidth * Game1.pixelZoom, 
+                    _healthbarBorderWidth * Game1.pixelZoom,
                     _healthbarBorderHeight * Game1.pixelZoom);
 
                 // sometimes monsters have less max health than health for some reason, we have to adjust
@@ -147,11 +150,11 @@ namespace HealthBars
                 if (monster.MaxHealth < monster.Health)
                     monster.MaxHealth = monster.Health;
                 float healthPercentage = (float) monster.Health / monster.MaxHealth;
-                
+
                 // adjust healthbar so it represents monster health
-                float adjustedHealthbarWidth = _config.HealthbarIsPixelAligned ? 
-                    Math.Max(1, (int) (_healthbarWidth * healthPercentage)) :
-                    _healthbarWidth * healthPercentage;
+                float adjustedHealthbarWidth = _config.HealthbarIsPixelAligned
+                    ? Math.Max(1, (int) (_healthbarWidth * healthPercentage))
+                    : _healthbarWidth * healthPercentage;
 
                 // actual healthbar rectangle, reposition / resize it so the healthbar stays inside the bar
                 Rectangle healthbarRectangle = new Rectangle(
@@ -163,6 +166,32 @@ namespace HealthBars
                 // draw health bar border and health bar to the screen
                 args.SpriteBatch.Draw(_healthbarTexture, healthbarRectangle, GetHealthColor(healthPercentage));
                 args.SpriteBatch.Draw(_healthbarBorderTexture, healthbarBorderRectangle, Color.White);
+
+                
+                // only draw the health text if specified so in the config
+                if (!_config.ShowHealthNumbers) continue;
+                
+                // the health text (current health / max health)
+                string healthText = $"{monster.Health}/{monster.MaxHealth}";
+                
+                // calculate best text size to fit the text into the health bar
+                Vector2 textSize = _healthTextFont.MeasureString(healthText);
+                float textScalingFitWidth = _healthbarWidth * Game1.pixelZoom * 1.2f / textSize.X;
+                float textScalingFitHeight = _healthbarHeight * Game1.pixelZoom * 1.2f / textSize.Y;
+                float textSizeScaling = Math.Min(textScalingFitWidth, textScalingFitHeight);
+                
+                // calculate centered position of the text inside the health bar
+                int textOffsetLeftPixels =
+                    (int) ((_healthbarWidth * Game1.pixelZoom - textSize.X * textSizeScaling) / 2);
+                int textOffsetTopPixels =
+                    (int) ((_healthbarHeight * Game1.pixelZoom - textSize.Y * textSizeScaling) / 2);
+                Vector2 textPosition = new Vector2(healthbarRectangle.X + textOffsetLeftPixels,
+                    healthbarRectangle.Y + textOffsetTopPixels);
+                    
+                // draw health text to screen
+                args.SpriteBatch.DrawString(_healthTextFont, healthText, textPosition, new Color(86, 22, 12), 0f,
+                    Vector2.Zero, textSizeScaling, SpriteEffects.None, 0);
+
             }
         }
 
@@ -206,7 +235,7 @@ namespace HealthBars
             return _healthbarOffset;
         }
 
-        
+
         /// <summary>
         /// Get the color of the health bar depending on the fraction of
         /// remaining health left. Generates a color from a color gradient from
@@ -217,9 +246,9 @@ namespace HealthBars
         /// <returns>A color representing the health percentage</returns>
         private static Color GetHealthColor(float healthPercentage)
         {
-            return healthPercentage > 0.5f ? 
-                new Color(1f - 1f * (healthPercentage - 0.5f), 1f, 0f) : 
-                new Color(1f, 1f * healthPercentage * 2f, 0f);
+            return healthPercentage > 0.5f
+                ? new Color(1f - 1f * (healthPercentage - 0.5f), 1f, 0f)
+                : new Color(1f, 1f * healthPercentage * 2f, 0f);
         }
 
 
