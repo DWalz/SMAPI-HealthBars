@@ -2,6 +2,7 @@
 .vs
 .idea
 **.sln
+**.sln.*
 
 # compiled files
 bin

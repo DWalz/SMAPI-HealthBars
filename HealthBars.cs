@@ -232,7 +232,60 @@ namespace HealthBars
         /// <returns>The health bar offset of a monster in **texture pixels**</returns>
         private int GetHealthbarOffset(Monster monster)
         {
-            return _healthbarOffset;
+            int monsterOffset = 0;
+            
+            if (monster is AngryRoger || monster is Ghost)
+                monsterOffset = -5;
+            if (monster is Bat)
+                monsterOffset = 9;
+            if (monster is BigSlime)
+                monsterOffset = 1;
+            if (monster is BlueSquid)
+                monsterOffset = 5;
+            if (monster is Bug)
+                monsterOffset = -10;
+            if (monster is DinoMonster)
+                monsterOffset = 1;
+            if (monster is DustSpirit)
+                monsterOffset = 12;
+            if (monster is DwarvishSentry)
+                monsterOffset = -6;
+            if (monster is Fly)
+                monsterOffset = -3;
+            if (monster is GreenSlime)
+                monsterOffset = 4;
+            if (monster is Grub)
+                monsterOffset = 6;
+            if (monster is HotHead)
+                monsterOffset = 0;
+            if (monster is LavaCrab || monster is RockCrab)
+                monsterOffset = 2;
+            if (monster is LavaLurk)
+                monsterOffset = 0;
+            if (monster is Leaper)
+                monsterOffset = 6;
+            if (monster is MetalHead)
+                monsterOffset = 0;
+            if (monster is Mummy)
+                monsterOffset = -3;
+            if (monster is RockGolem)
+                monsterOffset = -5;
+            if (monster is Serpent)
+                monsterOffset = 12;
+            if (monster is ShadowBrute)
+                monsterOffset = -4;
+            if (monster is ShadowShaman)
+                monsterOffset = -6;
+            if (monster is Shooter)
+                monsterOffset = -4;
+            if (monster is Skeleton)
+                monsterOffset = -5;
+            if (monster is Spiker)
+                monsterOffset = 4;
+            if (monster is SquidKid)
+                monsterOffset = -5;
+
+            return monsterOffset + _healthbarOffset;
         }
 
 
