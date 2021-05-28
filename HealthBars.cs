@@ -100,6 +100,9 @@ namespace HealthBars
             // Register the event handlers
             Monitor.Log("Registering event handlers", LogLevel.Debug);
             helper.Events.Display.RenderedWorld += OnRenderedWorld;
+            
+            // utility command
+            helper.ConsoleCommands.Add("spawn", "Spawn some monsters", this.SpawnMonsters);
         }
 
 
@@ -280,5 +283,27 @@ namespace HealthBars
                             $"{item.Value}, instead found {item.Key.FieldType}", LogLevel.Error);
             }
         }
+        
+        
+        /// <summary>
+        /// Helper method to spawn monsters with health bars
+        /// </summary>
+        /// <param name="arg1">The command name</param>
+        /// <param name="arg2">The command arguments</param>
+        /// <exception cref="NotImplementedException"></exception>
+        private void SpawnMonsters(string arg1, string[] arg2)
+        {
+            Vector2 playerPosition = Game1.player.Position;
+            List<Monster> monsters = new List<Monster>
+            {
+                new Leaper(playerPosition),
+                new Shooter(playerPosition)
+            };
+            foreach (Monster monster in monsters)
+            {
+                Game1.currentLocation.addCharacter(monster);
+            }
+        }
+        
     }
 }
