@@ -1,22 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using StardewValley.Monsters;
+﻿using System.Collections.Generic;
 
 namespace HealthBars
 {
     public class HealthBarsConfig
     {
-        /// <summary>The offset of the health bar above the top sprite edge in **texture pixels**</summary>
-        public int HealthBarOffset = 0;
-
         /// <summary>If the actual health bar bar (inner part) is pixel aligned with the texture</summary>
         public bool HealthBarIsPixelAligned = true;
 
-        /// <summary>If the health bar should include the current monster health as text</summary>
-        public bool ShowHealthNumbers = true;
+        /// <summary>The offset of the health bar above the top sprite edge in **texture pixels**</summary>
+        public int HealthBarOffset = 0;
 
-        /// <summary>The individual monster type health bar offset, positive values
-        /// indicate the health bar is further down</summary>
+        /// <summary>
+        ///     The individual monster type health bar offset, positive values
+        ///     indicate the health bar is further down
+        /// </summary>
         public Dictionary<string, int> MonsterTypeOffset = new Dictionary<string, int>
         {
             {"AngryRoger", -5},
@@ -47,5 +44,8 @@ namespace HealthBars
             {"Spiker", 4},
             {"SquidKid", -5}
         };
+
+        /// <summary>If the health bar should include the current monster health as text</summary>
+        public bool ShowHealthNumbers = false;
     }
 }

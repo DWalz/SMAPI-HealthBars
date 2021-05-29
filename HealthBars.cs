@@ -16,38 +16,10 @@ namespace HealthBars
     [SuppressMessage("ReSharper", "SuggestVarOrType_BuiltInTypes")]
     public class HealthBars : Mod
     {
-        /// <summary>The width of the health bar border in **texture pixels**</summary>
-        private int _healthBarBorderWidth;
-
-        /// <summary>The height of the health bar border in **texture pixels**</summary>
-        private int _healthBarBorderHeight;
-
-        /// <summary>The width of the health bar in **texture pixels**</summary>
-        private int _healthBarWidth;
-
-        /// <summary>The height of the enemy health bars in **texture pixels**</summary>
-        private int _healthBarHeight;
-
-        /// <summary>The offset of the health bar above monsters in **texture pixels**</summary>
-        private int _healthBarOffset;
-
-
-        /// <summary>The configuration of the mod</summary>
-        private HealthBarsConfig _config;
-
-
-        /// <summary>Texture of the health bar border</summary>
-        private Texture2D _healthBarBorderTexture;
-
-        /// <summary>Texture of the health bar background</summary>
-        private Texture2D _healthBarTexture;
-
-        /// <summary>Font of the health bar text</summary>
-        private SpriteFont _healthTextFont;
-
-
-        /// <summary>Field info for rock crabs' private shellGone property;
-        /// needed to hide rock crabs' health bar when in rock form</summary>
+        /// <summary>
+        ///     Field info for rock crabs' private shellGone property;
+        ///     needed to hide rock crabs' health bar when in rock form
+        /// </summary>
         private static readonly FieldInfo RockCrabShellGoneFieldInfo =
             typeof(RockCrab).GetField("shellGone", BindingFlags.Instance | BindingFlags.NonPublic);
 
@@ -60,9 +32,38 @@ namespace HealthBars
             typeof(Bat).GetField("seenPlayer", BindingFlags.Instance | BindingFlags.NonPublic);
 
 
+        /// <summary>The configuration of the mod</summary>
+        private HealthBarsConfig _config;
+
+        /// <summary>The height of the health bar border in **texture pixels**</summary>
+        private int _healthBarBorderHeight;
+
+
+        /// <summary>Texture of the health bar border</summary>
+        private Texture2D _healthBarBorderTexture;
+
+        /// <summary>The width of the health bar border in **texture pixels**</summary>
+        private int _healthBarBorderWidth;
+
+        /// <summary>The height of the enemy health bars in **texture pixels**</summary>
+        private int _healthBarHeight;
+
+        /// <summary>The offset of the health bar above monsters in **texture pixels**</summary>
+        private int _healthBarOffset;
+
+        /// <summary>Texture of the health bar background</summary>
+        private Texture2D _healthBarTexture;
+
+        /// <summary>The width of the health bar in **texture pixels**</summary>
+        private int _healthBarWidth;
+
+        /// <summary>Font of the health bar text</summary>
+        private SpriteFont _healthTextFont;
+
+
         /// <summary>
-        /// The main entry function of the mod. This gets executed once the mod is loaded
-        /// by the game.
+        ///     The main entry function of the mod. This gets executed once the mod is loaded
+        ///     by the game.
         /// </summary>
         /// <param name="helper">The modding api helper</param>
         public override void Entry(IModHelper helper)
@@ -100,32 +101,25 @@ namespace HealthBars
             // Register the event handlers
             Monitor.Log("Registering event handlers", LogLevel.Debug);
             helper.Events.Display.RenderedWorld += OnRenderedWorld;
-            
-            // utility command
-            helper.ConsoleCommands.Add("spawn", "Spawn some monsters", this.SpawnMonsters);
         }
 
 
         /// <summary>
-        /// Event handler function for when the world is rendered.
-        /// It collects all the monsters in the player location and draws health bars above them
-        /// as long as the player can see them.
+        ///     Event handler function for when the world is rendered.
+        ///     It collects all the monsters in the player location and draws health bars above them
+        ///     as long as the player can see them.
         /// </summary>
         /// <param name="sender">The event sender</param>
         /// <param name="args">The event arguments; contains the <c>SpriteBatch</c> to draw the health bar on</param>
         private void OnRenderedWorld(object sender, RenderedWorldEventArgs args)
         {
-            // Debug helpers - let us enter the mines as quickly as possible;
-            Game1.player.Speed = 20;
-            Game1.player.health = Game1.player.maxHealth;
-
             if (_healthTextFont == null)
                 _healthTextFont = Game1.smallFont;
 
             // Get all the characters and if it is a monster, get the bounding box of the sprite to align
             // the health bar
             var characters = Game1.currentLocation.getCharacters();
-            foreach (NPC character in characters)
+            foreach (var character in characters)
             {
                 // Characters that aren't monsters have no health bar
                 if (!(character is Monster monster)) continue;
@@ -134,7 +128,7 @@ namespace HealthBars
                 if (!PlayerCanSeeHealth(monster)) continue;
 
                 // current bounding box of the sprite of the monster
-                Rectangle boundingBoxSprite = new Rectangle(
+                var boundingBoxSprite = new Rectangle(
                     (int) monster.getLocalPosition(Game1.viewport).X,
                     (int) monster.getLocalPosition(Game1.viewport).Y -
                     monster.Sprite.SpriteHeight * Game1.pixelZoom / 2,
@@ -142,7 +136,7 @@ namespace HealthBars
                     monster.Sprite.SpriteHeight * Game1.pixelZoom);
 
                 // health bar border rectangle
-                Rectangle healthbarBorderRectangle = new Rectangle(
+                var healthbarBorderRectangle = new Rectangle(
                     boundingBoxSprite.Center.X - _healthBarBorderWidth * Game1.pixelZoom / 2,
                     boundingBoxSprite.Y + (GetHealthBarOffset(monster) - _healthBarBorderHeight) * Game1.pixelZoom,
                     _healthBarBorderWidth * Game1.pixelZoom,
@@ -160,7 +154,7 @@ namespace HealthBars
                     : _healthBarWidth * healthPercentage;
 
                 // actual health bar rectangle, reposition / resize it so the health bar stays inside the bar
-                Rectangle healthBarRectangle = new Rectangle(
+                var healthBarRectangle = new Rectangle(
                     healthbarBorderRectangle.X + 2 * Game1.pixelZoom,
                     healthbarBorderRectangle.Y + 2 * Game1.pixelZoom,
                     (int) (adjustedHealthbarWidth * Game1.pixelZoom),
@@ -170,40 +164,39 @@ namespace HealthBars
                 args.SpriteBatch.Draw(_healthBarTexture, healthBarRectangle, GetHealthColor(healthPercentage));
                 args.SpriteBatch.Draw(_healthBarBorderTexture, healthbarBorderRectangle, Color.White);
 
-                
+
                 // only draw the health text if specified so in the config
                 if (!_config.ShowHealthNumbers) continue;
-                
+
                 // the health text (current health / max health)
                 string healthText = $"{monster.Health}/{monster.MaxHealth}";
-                
+
                 // calculate best text size to fit the text into the health bar
-                Vector2 textSize = _healthTextFont.MeasureString(healthText);
+                var textSize = _healthTextFont.MeasureString(healthText);
                 float textScalingFitWidth = _healthBarWidth * Game1.pixelZoom * 1.2f / textSize.X;
                 float textScalingFitHeight = _healthBarHeight * Game1.pixelZoom * 1.2f / textSize.Y;
                 float textSizeScaling = Math.Min(textScalingFitWidth, textScalingFitHeight);
-                
+
                 // calculate centered position of the text inside the health bar
                 int textOffsetLeftPixels =
                     (int) ((_healthBarWidth * Game1.pixelZoom - textSize.X * textSizeScaling) / 2);
                 int textOffsetTopPixels =
                     (int) ((_healthBarHeight * Game1.pixelZoom - textSize.Y * textSizeScaling) / 2);
-                Vector2 textPosition = new Vector2(healthBarRectangle.X + textOffsetLeftPixels,
+                var textPosition = new Vector2(healthBarRectangle.X + textOffsetLeftPixels,
                     healthBarRectangle.Y + textOffsetTopPixels);
-                    
+
                 // draw health text to screen
                 args.SpriteBatch.DrawString(_healthTextFont, healthText, textPosition, new Color(86, 22, 12), 0f,
                     Vector2.Zero, textSizeScaling, SpriteEffects.None, 0);
-
             }
         }
 
 
         /// <summary>
-        /// Detects if the player can see the monster. This accounts for if the monster is invisible
-        /// or a special monster (eg. rock crab) that can not be seen immediately to avoid revealing
-        /// monster locations too early. Offscreen monsters are considered seen as long as not
-        /// invisible to correctly display health bars of semi-offscreen monsters.
+        ///     Detects if the player can see the monster. This accounts for if the monster is invisible
+        ///     or a special monster (eg. rock crab) that can not be seen immediately to avoid revealing
+        ///     monster locations too early. Offscreen monsters are considered seen as long as not
+        ///     invisible to correctly display health bars of semi-offscreen monsters.
         /// </summary>
         /// <param name="monster">The monster</param>
         /// <returns>If the player can see the monster</returns>
@@ -226,10 +219,10 @@ namespace HealthBars
         }
 
         /// <summary>
-        /// Calculates the health bar height offset for a monster depending on monster type
-        /// to adjust it to a better position. Some monsters bodies are not properly aligned
-        /// with their bounding box
-        /// TODO: Probably put this into the config and make a dictionary out of it; traverse the map here
+        ///     Calculates the health bar height offset for a monster depending on monster type
+        ///     to adjust it to a better position. Some monsters bodies are not properly aligned
+        ///     with their bounding box
+        ///     TODO: Probably put this into the config and make a dictionary out of it; traverse the map here
         /// </summary>
         /// <param name="monster">The monster</param>
         /// <returns>The health bar offset of a monster in **texture pixels**</returns>
@@ -246,8 +239,8 @@ namespace HealthBars
             }
             catch (KeyNotFoundException)
             {
-                Monitor.Log($"Monster type {monsterTypeName} not found in config.\nIf it is a monster " +
-                            "from another mod add the respective class name(s) to the dictionary.");
+                Monitor.LogOnce($"Monster type {monsterTypeName} not found in config.\nIf it is a monster " +
+                                "from another mod add the respective class name(s) to the dictionary.");
             }
 
             return monsterOffset + _healthBarOffset;
@@ -255,10 +248,10 @@ namespace HealthBars
 
 
         /// <summary>
-        /// Get the color of the health bar depending on the fraction of
-        /// remaining health left. Generates a color from a color gradient from
-        /// red to yellow while health is under 50% and then from yellow to green from
-        /// 50% to 100% respectively.
+        ///     Get the color of the health bar depending on the fraction of
+        ///     remaining health left. Generates a color from a color gradient from
+        ///     red to yellow while health is under 50% and then from yellow to green from
+        ///     50% to 100% respectively.
         /// </summary>
         /// <param name="healthPercentage">The health percentage; ranging from 0 to 1</param>
         /// <returns>A color representing the health percentage</returns>
@@ -271,39 +264,15 @@ namespace HealthBars
 
 
         /// <summary>
-        /// Verifies all reflection <c>FieldInfo</c> types to keep the integrity
-        /// TODO: Check, if this is really necessary
+        ///     Verifies all reflection <c>FieldInfo</c> types to keep the integrity
+        ///     TODO: Check, if this is really necessary
         /// </summary>
         /// <param name="fields">The fields and their assumed type</param>
         private void VerifyReflectionFields(Dictionary<FieldInfo, Type> fields)
         {
             foreach (var item in fields.Where(item => item.Key.FieldType != item.Value))
-            {
                 Monitor.Log($"Field {item.Key.Name} of {item.Key.DeclaringType} was expected to be " +
                             $"{item.Value}, instead found {item.Key.FieldType}", LogLevel.Error);
-            }
         }
-        
-        
-        /// <summary>
-        /// Helper method to spawn monsters with health bars
-        /// </summary>
-        /// <param name="arg1">The command name</param>
-        /// <param name="arg2">The command arguments</param>
-        /// <exception cref="NotImplementedException"></exception>
-        private void SpawnMonsters(string arg1, string[] arg2)
-        {
-            Vector2 playerPosition = Game1.player.Position;
-            List<Monster> monsters = new List<Monster>
-            {
-                new Leaper(playerPosition),
-                new Shooter(playerPosition)
-            };
-            foreach (Monster monster in monsters)
-            {
-                Game1.currentLocation.addCharacter(monster);
-            }
-        }
-        
     }
 }
