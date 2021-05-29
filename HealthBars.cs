@@ -16,33 +16,33 @@ namespace HealthBars
     [SuppressMessage("ReSharper", "SuggestVarOrType_BuiltInTypes")]
     public class HealthBars : Mod
     {
-        /// <summary>The width of the healthbar border in **texture pixels**</summary>
-        private int _healthbarBorderWidth;
+        /// <summary>The width of the health bar border in **texture pixels**</summary>
+        private int _healthBarBorderWidth;
 
-        /// <summary>The height of the healthbar border in **texture pixels**</summary>
-        private int _healthbarBorderHeight;
+        /// <summary>The height of the health bar border in **texture pixels**</summary>
+        private int _healthBarBorderHeight;
 
         /// <summary>The width of the health bar in **texture pixels**</summary>
-        private int _healthbarWidth;
+        private int _healthBarWidth;
 
         /// <summary>The height of the enemy health bars in **texture pixels**</summary>
-        private int _healthbarHeight;
+        private int _healthBarHeight;
 
-        /// <summary>The offset of the healthbar above monsters in **texture pixels**</summary>
-        private int _healthbarOffset;
+        /// <summary>The offset of the health bar above monsters in **texture pixels**</summary>
+        private int _healthBarOffset;
 
 
         /// <summary>The configuration of the mod</summary>
         private HealthBarsConfig _config;
 
 
-        /// <summary>Texture of the healthbar border</summary>
-        private Texture2D _healthbarBorderTexture;
+        /// <summary>Texture of the health bar border</summary>
+        private Texture2D _healthBarBorderTexture;
 
-        /// <summary>Texture of the healthbar background</summary>
-        private Texture2D _healthbarTexture;
+        /// <summary>Texture of the health bar background</summary>
+        private Texture2D _healthBarTexture;
 
-        /// <summary>Font of the healthbar text</summary>
+        /// <summary>Font of the health bar text</summary>
         private SpriteFont _healthTextFont;
 
 
@@ -73,18 +73,18 @@ namespace HealthBars
             // Loading config values   
             Monitor.Log("Loading config", LogLevel.Debug);
             _config = Helper.ReadConfig<HealthBarsConfig>();
-            _healthbarOffset = -_config.HealthbarOffset;
+            _healthBarOffset = -_config.HealthBarOffset;
 
 
             // Loading textures and assets
             Monitor.Log("Loading Textures", LogLevel.Debug);
-            _healthbarBorderTexture = helper.Content.Load<Texture2D>("assets/healthbar_border_w2.png");
-            _healthbarBorderWidth = _healthbarBorderTexture.Width;
-            _healthbarBorderHeight = _healthbarBorderTexture.Height;
-            _healthbarWidth = _healthbarBorderWidth - 4;
-            _healthbarHeight = _healthbarBorderHeight - 4;
-            _healthbarTexture = new Texture2D(Game1.graphics.GraphicsDevice, 1, 1);
-            _healthbarTexture.SetData(new[] {Color.White});
+            _healthBarBorderTexture = helper.Content.Load<Texture2D>("assets/healthbar_border_w2.png");
+            _healthBarBorderWidth = _healthBarBorderTexture.Width;
+            _healthBarBorderHeight = _healthBarBorderTexture.Height;
+            _healthBarWidth = _healthBarBorderWidth - 4;
+            _healthBarHeight = _healthBarBorderHeight - 4;
+            _healthBarTexture = new Texture2D(Game1.graphics.GraphicsDevice, 1, 1);
+            _healthBarTexture.SetData(new[] {Color.White});
 
 
             // Verify the reflection field type; in the case that the type is changed we know about it first
@@ -100,6 +100,9 @@ namespace HealthBars
             // Register the event handlers
             Monitor.Log("Registering event handlers", LogLevel.Debug);
             helper.Events.Display.RenderedWorld += OnRenderedWorld;
+            
+            // utility command
+            helper.ConsoleCommands.Add("spawn", "Spawn some monsters", this.SpawnMonsters);
         }
 
 
@@ -140,10 +143,10 @@ namespace HealthBars
 
                 // health bar border rectangle
                 Rectangle healthbarBorderRectangle = new Rectangle(
-                    boundingBoxSprite.Center.X - _healthbarBorderWidth * Game1.pixelZoom / 2,
-                    boundingBoxSprite.Y + (GetHealthbarOffset(monster) - _healthbarBorderHeight) * Game1.pixelZoom,
-                    _healthbarBorderWidth * Game1.pixelZoom,
-                    _healthbarBorderHeight * Game1.pixelZoom);
+                    boundingBoxSprite.Center.X - _healthBarBorderWidth * Game1.pixelZoom / 2,
+                    boundingBoxSprite.Y + (GetHealthBarOffset(monster) - _healthBarBorderHeight) * Game1.pixelZoom,
+                    _healthBarBorderWidth * Game1.pixelZoom,
+                    _healthBarBorderHeight * Game1.pixelZoom);
 
                 // sometimes monsters have less max health than health for some reason, we have to adjust
                 // TODO: Check out if there is another way, right now we're editing actual monster properties
@@ -151,21 +154,21 @@ namespace HealthBars
                     monster.MaxHealth = monster.Health;
                 float healthPercentage = (float) monster.Health / monster.MaxHealth;
 
-                // adjust healthbar so it represents monster health
-                float adjustedHealthbarWidth = _config.HealthbarIsPixelAligned
-                    ? Math.Max(1, (int) (_healthbarWidth * healthPercentage))
-                    : _healthbarWidth * healthPercentage;
+                // adjust health bar so it represents monster health
+                float adjustedHealthbarWidth = _config.HealthBarIsPixelAligned
+                    ? Math.Max(1, (int) (_healthBarWidth * healthPercentage))
+                    : _healthBarWidth * healthPercentage;
 
-                // actual healthbar rectangle, reposition / resize it so the healthbar stays inside the bar
-                Rectangle healthbarRectangle = new Rectangle(
+                // actual health bar rectangle, reposition / resize it so the health bar stays inside the bar
+                Rectangle healthBarRectangle = new Rectangle(
                     healthbarBorderRectangle.X + 2 * Game1.pixelZoom,
                     healthbarBorderRectangle.Y + 2 * Game1.pixelZoom,
                     (int) (adjustedHealthbarWidth * Game1.pixelZoom),
-                    _healthbarHeight * Game1.pixelZoom);
+                    _healthBarHeight * Game1.pixelZoom);
 
                 // draw health bar border and health bar to the screen
-                args.SpriteBatch.Draw(_healthbarTexture, healthbarRectangle, GetHealthColor(healthPercentage));
-                args.SpriteBatch.Draw(_healthbarBorderTexture, healthbarBorderRectangle, Color.White);
+                args.SpriteBatch.Draw(_healthBarTexture, healthBarRectangle, GetHealthColor(healthPercentage));
+                args.SpriteBatch.Draw(_healthBarBorderTexture, healthbarBorderRectangle, Color.White);
 
                 
                 // only draw the health text if specified so in the config
@@ -176,17 +179,17 @@ namespace HealthBars
                 
                 // calculate best text size to fit the text into the health bar
                 Vector2 textSize = _healthTextFont.MeasureString(healthText);
-                float textScalingFitWidth = _healthbarWidth * Game1.pixelZoom * 1.2f / textSize.X;
-                float textScalingFitHeight = _healthbarHeight * Game1.pixelZoom * 1.2f / textSize.Y;
+                float textScalingFitWidth = _healthBarWidth * Game1.pixelZoom * 1.2f / textSize.X;
+                float textScalingFitHeight = _healthBarHeight * Game1.pixelZoom * 1.2f / textSize.Y;
                 float textSizeScaling = Math.Min(textScalingFitWidth, textScalingFitHeight);
                 
                 // calculate centered position of the text inside the health bar
                 int textOffsetLeftPixels =
-                    (int) ((_healthbarWidth * Game1.pixelZoom - textSize.X * textSizeScaling) / 2);
+                    (int) ((_healthBarWidth * Game1.pixelZoom - textSize.X * textSizeScaling) / 2);
                 int textOffsetTopPixels =
-                    (int) ((_healthbarHeight * Game1.pixelZoom - textSize.Y * textSizeScaling) / 2);
-                Vector2 textPosition = new Vector2(healthbarRectangle.X + textOffsetLeftPixels,
-                    healthbarRectangle.Y + textOffsetTopPixels);
+                    (int) ((_healthBarHeight * Game1.pixelZoom - textSize.Y * textSizeScaling) / 2);
+                Vector2 textPosition = new Vector2(healthBarRectangle.X + textOffsetLeftPixels,
+                    healthBarRectangle.Y + textOffsetTopPixels);
                     
                 // draw health text to screen
                 args.SpriteBatch.DrawString(_healthTextFont, healthText, textPosition, new Color(86, 22, 12), 0f,
@@ -223,16 +226,31 @@ namespace HealthBars
         }
 
         /// <summary>
-        /// Calculates the healthbar height offset for a monster depending on monster type
+        /// Calculates the health bar height offset for a monster depending on monster type
         /// to adjust it to a better position. Some monsters bodies are not properly aligned
         /// with their bounding box
         /// TODO: Probably put this into the config and make a dictionary out of it; traverse the map here
         /// </summary>
         /// <param name="monster">The monster</param>
         /// <returns>The health bar offset of a monster in **texture pixels**</returns>
-        private int GetHealthbarOffset(Monster monster)
+        private int GetHealthBarOffset(Monster monster)
         {
-            return _healthbarOffset;
+            int monsterOffset = 0;
+
+            // determine monster type by class name
+            string monsterTypeName = "";
+            try
+            {
+                monsterTypeName = monster.GetType().Name;
+                monsterOffset = _config.MonsterTypeOffset[monsterTypeName];
+            }
+            catch (KeyNotFoundException)
+            {
+                Monitor.Log($"Monster type {monsterTypeName} not found in config.\nIf it is a monster " +
+                            "from another mod add the respective class name(s) to the dictionary.");
+            }
+
+            return monsterOffset + _healthBarOffset;
         }
 
 
@@ -265,5 +283,27 @@ namespace HealthBars
                             $"{item.Value}, instead found {item.Key.FieldType}", LogLevel.Error);
             }
         }
+        
+        
+        /// <summary>
+        /// Helper method to spawn monsters with health bars
+        /// </summary>
+        /// <param name="arg1">The command name</param>
+        /// <param name="arg2">The command arguments</param>
+        /// <exception cref="NotImplementedException"></exception>
+        private void SpawnMonsters(string arg1, string[] arg2)
+        {
+            Vector2 playerPosition = Game1.player.Position;
+            List<Monster> monsters = new List<Monster>
+            {
+                new Leaper(playerPosition),
+                new Shooter(playerPosition)
+            };
+            foreach (Monster monster in monsters)
+            {
+                Game1.currentLocation.addCharacter(monster);
+            }
+        }
+        
     }
 }
